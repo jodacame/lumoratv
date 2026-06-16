@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Entitlements para el build "iCloud" de LumoraTV (sincronización entre
+  dispositivos por usuario). SOLO se aplica al firmar con el Apple Developer
+  Program de pago, pasando el override en el comando de build:
+
+    CODE_SIGN_ENTITLEMENTS=Resources/LumoraTV.iCloud.entitlements
+    SWIFT_ACTIVE_COMPILATION_CONDITIONS="DEBUG LUMORA_ICLOUD"
+
+  El build de cuenta gratis NO referencia este archivo y queda 100% local.
+-->
+<plist version="1.0">
+<dict>
+    <!-- NOTA: se ELIMINÓ com.apple.developer.user-management (multiusuario de tvOS).
+         tvOS no aísla las cuentas de menores (colapsan al organizador) ni expone un
+         identificador de perfil utilizable, así que LumoraTV gestiona sus PROPIOS
+         perfiles (ver ProfileStore) sobre un único almacén por dispositivo, y los
+         sincroniza por iCloud keyados por el UUID de perfil. -->
+
+    <!-- CloudKit private database (datos preciosos: progreso, listas, subs…). -->
+    <key>com.apple.developer.icloud-services</key>
+    <array>
+        <string>CloudKit</string>
+    </array>
+    <key>com.apple.developer.icloud-container-identifiers</key>
+    <array>
+        <string>iCloud.$(CFBundleIdentifier)</string>
+    </array>
+
+    <!-- Key-Value storage para la config pequeña (Fase 2). -->
+    <key>com.apple.developer.ubiquity-kvstore-identifier</key>
+    <string>$(TeamIdentifierPrefix)$(CFBundleIdentifier)</string>
+
+    <!-- Push silencioso para notificar cambios remotos (CKSubscription). -->
+    <key>aps-environment</key>
+    <string>development</string>
+</dict>
+</plist>

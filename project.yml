@@ -1,0 +1,88 @@
+name: LumoraTV
+options:
+  bundleIdPrefix: dev.jodacame
+  deploymentTarget:
+    tvOS: "26.0"
+  createIntermediateGroups: true
+
+packages:
+  GRDB:
+    url: https://github.com/groue/GRDB.swift
+    from: 7.0.0
+  MPVKit:
+    # Fork of mpvkit/MPVKit with the avfoundation audio output
+    # (AVSampleBufferAudioRenderer) enabled for tvOS — fixes silent playback on
+    # HDMI routes where mpv's audiounit output can't open (e.g. 32-channel output
+    # on Apple TV 4K 3rd gen / tvOS 26). See https://github.com/jodacame/MPVKit
+    url: https://github.com/jodacame/MPVKit.git
+    branch: lumoratv
+
+settings:
+  base:
+    # Pon aquí tu Team ID personal de Apple Developer (Xcode → Settings → Accounts),
+    # o pásalo al compilar: xcodebuild ... DEVELOPMENT_TEAM=XXXXXXXXXX
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+
+targets:
+  LumoraTV:
+    type: application
+    platform: tvOS
+    sources:
+      - Sources
+      - path: Resources/Assets.xcassets
+      # Avatares de perfil (PNG CC0, estilo Notionists de DiceBear). Carpeta
+      # empaquetada tal cual; se cargan por nombre desde el bundle.
+      - path: Resources/Avatars
+    dependencies:
+      - package: GRDB
+      - package: MPVKit
+        product: MPVKit
+    info:
+      path: Resources/Info.plist
+      properties:
+        CFBundleDisplayName: LumoraTV
+        UIUserInterfaceStyle: Dark
+        NSLocalNetworkUsageDescription: LumoraTV se conecta a tu servidor Plex en la red local.
+        NSBonjourServices:
+          - _plexmediasvr._tcp
+        NSAppTransportSecurity:
+          # App sideloaded personal: los backends (Plex/Prowlarr/TorrServer)
+          # viven en HTTP dentro de la LAN, con el host que el usuario configure.
+          # OJO: si se incluye NSAllowsLocalNetworking, tvOS IGNORA
+          # NSAllowsArbitraryLoads — y NSAllowsLocalNetworking no cubre hosts
+          # con TLD personalizado (.lan, etc.), solo .local / IPs privadas.
+          # Por eso dejamos SOLO arbitrary loads (genérico, sin host fijo).
+          NSAllowsArbitraryLoads: true
+        ITSAppUsesNonExemptEncryption: false
+        # Silent CloudKit push (live cross-device sync). tvOS only delivers these
+        # while the app is active — they're a hint; the foreground change-token
+        # fetch stays the source of truth. Inert on the free build (no push registered).
+        UIBackgroundModes:
+          - remote-notification
+        CFBundleURLTypes:
+          - CFBundleURLName: dev.jodacame.lumoratv
+            CFBundleURLSchemes:
+              - lumoratv
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.jodacame.lumoratv
+        TARGETED_DEVICE_FAMILY: "3"
+        ENABLE_PREVIEWS: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: "App Icon & Top Shelf Image"
+        # Bridging header: declares the AVDisplayCriteria SPI initializer used for
+        # content frame-rate matching on tvOS (see FrameRateMatcher.swift).
+        SWIFT_OBJC_BRIDGING_HEADER: Sources/Core/Player/LumoraTV-Bridging-Header.h
+        # AVKit/AVFoundation provide AVDisplayManager + the UIWindow.avDisplayManager
+        # category used for frame-rate matching. All access is via objc_msgSend, so
+        # the linker would dead-strip the dylibs (leaving `avDisplayManager` as a
+        # runtime unrecognized selector). `-needed_framework` forces them to stay.
+        OTHER_LDFLAGS: -Wl,-needed_framework,AVKit -Wl,-needed_framework,AVFoundation
+        # iCloud cross-device sync (per-user) is OFF by default so the free Apple
+        # account keeps building & running 100% locally. To produce the "iCloud"
+        # build (requires the PAID Apple Developer Program), add these overrides:
+        #   SWIFT_ACTIVE_COMPILATION_CONDITIONS="DEBUG LUMORA_ICLOUD"
+        #   CODE_SIGN_ENTITLEMENTS=Resources/LumoraTV.iCloud.entitlements
+        # Without them, all sync code is compiled out / inert (see SyncCapabilities).

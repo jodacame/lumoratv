@@ -1,0 +1,23 @@
+LumoraTV
+Copyright 2026 Jose Canchila
+
+This product includes software developed by third parties, distributed
+under their own licenses:
+
+  - mpv / libmpv      LGPL-2.1+      https://mpv.io
+  - FFmpeg            LGPL-2.1+      https://ffmpeg.org
+  - libplacebo        LGPL-2.1       https://libplacebo.org
+  - libass            ISC            https://github.com/libass/libass
+  - MoltenVK          Apache-2.0     https://github.com/KhronosGroup/MoltenVK
+  - dav1d             BSD-2-Clause   https://code.videolan.org/videolan/dav1d
+  - MPVKit            LGPL-2.1       https://github.com/mpvkit/MPVKit
+  - GRDB.swift        MIT            https://github.com/groue/GRDB.swift
+
+If you distribute binaries that link the LGPL components above, you must
+comply with the LGPL yourself (e.g. dynamic linking or providing relink
+object files, plus the license texts).
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
+
+Plex is a trademark of Plex, Inc. LumoraTV is an independent client and is
+not affiliated with, endorsed or certified by Plex, Inc.

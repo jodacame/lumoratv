@@ -1,0 +1,11 @@
+DerivedData/
+build/
+*.xcodeproj
+.DS_Store
+xcuserdata/
+
+# Notas internas de desarrollo (contienen datos del dispositivo/equipo)
+CLAUDE.md
+
+# Internal roadmap (working notes, not published)
+ROADMAP.md
